@@ -1,0 +1,5 @@
+name: SInventory
+version: '${project.version}'
+main: com.shojabon.sinventory.SInventory
+api-version: 1.17
+authors: [ Sho0 ]
