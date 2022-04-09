@@ -35,6 +35,22 @@ public class SInventoryPosition{
         return this.x + "-" + this.y + "-" + this.z;
     }
 
+    public static SInventoryPosition add(SInventoryPosition pos1, SInventoryPosition pos2, boolean twoDimensional){
+       if(twoDimensional){
+           return new SInventoryPosition(pos1.x + pos2.x, pos1.y + pos2.y, pos1.z);
+       }else{
+           return new SInventoryPosition(pos1.x + pos2.x, pos1.y + pos2.y, pos1.z + pos2.z);
+       }
+    }
+
+    public static SInventoryPosition minus(SInventoryPosition pos1, SInventoryPosition pos2, boolean twoDimensional){
+        if(twoDimensional){
+            return new SInventoryPosition(pos1.x - pos2.x, pos1.y - pos2.y, pos1.z);
+        }else {
+            return new SInventoryPosition(pos1.x - pos2.x, pos1.y - pos2.y, pos1.z - pos2.z);
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

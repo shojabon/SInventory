@@ -22,7 +22,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class SInventoryObject implements Listener {
+public class SInventoryObject{
 
     public SInventoryObject(){
         onMount();
@@ -34,8 +34,8 @@ public class SInventoryObject implements Listener {
 
     boolean requiredRender = true;
 
-
     SInventoryPosition objectLocation = new SInventoryPosition(0, 0, 0);
+    SInventoryPosition absoluteLocation = new SInventoryPosition(0, 0, 0);
 
     //events
     ArrayList<Consumer<InventoryClickEvent>> onClickEvents = new ArrayList<>();
@@ -48,12 +48,14 @@ public class SInventoryObject implements Listener {
     public final void setClickable(boolean clickable){
         this.clickable = clickable;
     }
+
     public final boolean isClickable(){
         return clickable;
     }
 
     public final void setOffset(int x, int y, int z){
         objectLocation = new SInventoryPosition(x, y, z);
+        absoluteLocation = new SInventoryPosition(x, y, z);
     }
 
     // main functions
@@ -64,6 +66,15 @@ public class SInventoryObject implements Listener {
     public void onMount(){}
 
     public void onUnMount(){}
+
+    public void onClick(InventoryClickEvent event, SInventoryPosition relativePosition){}
+
+    public static void executeOnClick(SInventoryObject starting, InventoryClickEvent event, SInventoryPosition clickLocation){
+        SInventoryPosition relativePosition = SInventoryPosition.minus(clickLocation, starting.absoluteLocation, true);
+        relativePosition.z = starting.absoluteLocation.z;
+        starting.onClick(event, relativePosition);
+        if(starting.parentObject != null) executeOnClick(starting.parentObject, event, clickLocation);
+    }
 
     public final VRender executeRender(){
         if(this.requiredRender){
@@ -87,6 +98,7 @@ public class SInventoryObject implements Listener {
 
     public final  void setChildObject(SInventoryObject object, String name, SInventoryPosition position){
         object.setOffset(position.x, position.y, position.z);
+        object.absoluteLocation = new SInventoryPosition(position.x + objectLocation.x, position.y +objectLocation.y, position.z + objectLocation.z);
         object.parentObject = this;
         object.onMount();
         this.childObjects.put(name, object);

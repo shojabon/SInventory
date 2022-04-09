@@ -21,6 +21,15 @@ public class VRender {
         clickEventHandling.put(new SInventoryPosition(x + invObj.objectLocation.x, y + invObj.objectLocation.y), this.invObj);
     }
 
+    public void set(int[] x, int[] y, ItemStack item){
+        for(int xIndividual: x){
+            for(int yIndividual: y){
+                iRender.put(new SInventoryPosition(xIndividual + invObj.objectLocation.x, yIndividual + invObj.objectLocation.y), item);
+                clickEventHandling.put(new SInventoryPosition(xIndividual + invObj.objectLocation.x, yIndividual + invObj.objectLocation.y), this.invObj);
+            }
+        }
+    }
+
     public void mergeRender(VRender render){
         for(SInventoryPosition pos: render.iRender.keySet()){
             SInventoryPosition offsetAppliedPos = new SInventoryPosition(pos.x, pos.y);

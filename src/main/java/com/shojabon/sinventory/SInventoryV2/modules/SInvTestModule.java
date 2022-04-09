@@ -5,42 +5,31 @@ import com.shojabon.sinventory.SInventoryV2.SInventoryPosition;
 import com.shojabon.sinventory.SInventoryV2.VRender;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.Item;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
 public class SInvTestModule extends SInventoryInstance {
 
 
     SInvButton button = new SInvButton();
-    SInvCounter counter = new SInvCounter();
-    SInvCounter counter2 = new SInvCounter();
-    int i = 0;
+    ItemStack back;
 
-    public SInvTestModule(){
+    public SInvTestModule(ItemStack background, int count){
         setClickable(false);
-        button.addOnClickEvent((e) -> {
-            if(i == 0){
-                counter.item.set(new ItemStack(Material.IRON_INGOT));
-            }
-            if(i == 1){
-                counter.item.set(new ItemStack(Material.GOLD_INGOT));
-            }
-            if(i == 2){
-                counter.item.set(new ItemStack(Material.COPPER_INGOT));
-            }
-            i+=1;
-            if(i == 3){
-                i = 1;
-            }
-        });
+        this.back = background;
 
+        setChildObject(button, "button", new SInventoryPosition(1, 1, 2));
+    }
 
-        setChildObject(counter, "counter", new SInventoryPosition(0, 1, 0));
-        setChildObject(counter2, "counter2", new SInventoryPosition(1, 1, 0));
-        setChildObject(button, "button", new SInventoryPosition(0, 0, 0));
+    @Override
+    public void onClick(InventoryClickEvent event, SInventoryPosition relativePosition) {
+        Bukkit.broadcastMessage("glass " + relativePosition.get3DString());
     }
 
     @Override
     public VRender render(VRender render) {
+        render.set(new int[]{2, 3, 4, 5}, new int[]{2,3,4,5}, back);
         return render;
 
     }
