@@ -16,15 +16,22 @@ public class SInventoryState <T>{
         this.value = defaultValue;
     }
 
-    public void setValue(T value) {
-        this.value = value;
+    public SInventoryState(){
+        this.value = null;
     }
 
-    public T getValue() {
+    public void set(T value) {
+        this.value = value;
+        for(Consumer<T> consumer: onSetEvents){
+            consumer.accept(value);
+        }
+    }
+
+    public T get() {
         return value;
     }
 
-    public void addOnClickEvent(Consumer<T> event){
+    public void addOnSetEvent(Consumer<T> event){
         this.onSetEvents.add(event);
     }
 }
