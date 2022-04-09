@@ -8,26 +8,25 @@ import org.bukkit.inventory.ItemStack;
 public class SInvCounter extends SInventoryObject {
 
     public SInventoryState<Integer> count = new SInventoryState<>(1);
+    public SInventoryState<ItemStack> item = new SInventoryState<>(new ItemStack(Material.DIAMOND));
 
     public SInvCounter(){
-        addOnClickEvent((e) -> {
-            count.set(1);
+        runTaskTimerAsync(()-> {
+            if(count.get() == 1){
+                count.set(5);
+            }else{
+                count.set(1);
+            }
+        }, 5, 5);
+        addOnClickEvent(e -> {
+            Bukkit.broadcastMessage("test");
         });
     }
 
     @Override
     public VRender render(VRender render) {
-        if(count.get() == 1){
-            render.set(0, 0, new ItemStack(Material.DIAMOND));
-        }
-        if(count.get() == 2){
-            render.set(0, 1, new ItemStack(Material.GOLD_INGOT));
-        }
-        if(count.get() == 3){
-            render.set(0, 2, new ItemStack(Material.IRON_INGOT));
-        }
-        if(count.get() == 4){
-            render.set(0, 3, new ItemStack(Material.COPPER_INGOT));
+        for(int i = 0; i < count.get(); i++){
+            render.set(0, i, new ItemStack(item.get()));
         }
         return render;
 

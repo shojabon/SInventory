@@ -11,6 +11,8 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -38,6 +40,8 @@ public class SInventoryObject implements Listener {
     //events
     ArrayList<Consumer<InventoryClickEvent>> onClickEvents = new ArrayList<>();
     ArrayList<Consumer<InventoryClickEvent>> asyncOnClickEvents = new ArrayList<>();
+
+    ArrayList<BukkitTask> bukkitTasks = new ArrayList<>();
 
     private boolean clickable = false;
 
@@ -76,7 +80,7 @@ public class SInventoryObject implements Listener {
         return result;
     }
 
-    public final void setRequiredRenderToTree(SInventoryObject startingPoint){
+    public static void setRequiredRenderToTree(SInventoryObject startingPoint){
         startingPoint.requiredRender = true;
         if(startingPoint.parentObject != null) setRequiredRenderToTree(startingPoint.parentObject);
     }
@@ -96,6 +100,34 @@ public class SInventoryObject implements Listener {
 
     public final void addAsynchronousOnClickEvent(Consumer<InventoryClickEvent> event){
         this.asyncOnClickEvents.add(event);
+    }
+
+    // timer tasks
+
+    public final void runTaskTimer(Runnable task, int delayTick, int intervalTick){
+        bukkitTasks.add(Bukkit.getScheduler().runTaskTimer(SInventoryInstance.pluginHook, task, delayTick, intervalTick));
+    }
+
+    public final void runTaskTimerAsync(Runnable task, int delayTick, int intervalTick){
+        bukkitTasks.add(Bukkit.getScheduler().runTaskTimerAsynchronously(SInventoryInstance.pluginHook, task, delayTick, intervalTick));
+    }
+
+
+    public final void runTaskLater(Runnable task, int delayTick, boolean async){
+        bukkitTasks.add(Bukkit.getScheduler().runTaskLater(SInventoryInstance.pluginHook, task, delayTick));
+    }
+
+    public final void runTaskLaterAsync(Runnable task, int delayTick, boolean async){
+        bukkitTasks.add(Bukkit.getScheduler().runTaskLaterAsynchronously(SInventoryInstance.pluginHook, task, delayTick));
+    }
+
+    public static void cancelAllBukkitTasks(SInventoryObject startingPoint){
+        for(BukkitTask task: startingPoint.bukkitTasks){
+            task.cancel();
+        }
+        for(SInventoryObject obj: startingPoint.childObjects.values()){
+            cancelAllBukkitTasks(obj);
+        }
     }
 
 

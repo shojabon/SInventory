@@ -45,6 +45,11 @@ public class SInventoryInstance extends SInventoryObject{
         }
 
         for(SInventoryPosition pos: render.iRender.keySet()){
+            if(renderCache != null){
+                if(renderCache.iRender.containsKey(pos)) {
+                    if(render.iRender.get(pos).isSimilar(renderCache.iRender.get(pos))) continue;
+                }
+            }
             mainInventory.setItem(pos.x + objectLocation.x + ((pos.y + objectLocation.y) * 9), render.iRender.get(pos));
         }
         this.renderCache = render;
@@ -57,7 +62,7 @@ public class SInventoryInstance extends SInventoryObject{
 
                 SInventoryState<?> state = (SInventoryState<?>) field.get(startingPoint);
                 state.addOnSetEvent((e)->{
-                    startingPoint.setRequiredRenderToTree(startingPoint);
+                    setRequiredRenderToTree(startingPoint);
                 });
                 state.addOnSetEvent((e)->{
                     renderItems();
@@ -97,6 +102,7 @@ public class SInventoryInstance extends SInventoryObject{
     @EventHandler
     public void onClose(InventoryCloseEvent e){
         if(e.getPlayer().getUniqueId() != inventoryOwner.getUniqueId()) return;
+        cancelAllBukkitTasks(this);
         HandlerList.unregisterAll(this);
         unmountObjects(this);
     }
