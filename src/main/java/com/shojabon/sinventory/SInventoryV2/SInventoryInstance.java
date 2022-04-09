@@ -57,7 +57,7 @@ public class SInventoryInstance extends SInventoryObject{
 
                 SInventoryState<?> state = (SInventoryState<?>) field.get(startingPoint);
                 state.addOnSetEvent((e)->{
-                    startingPoint.requiredRender = true;
+                    startingPoint.setRequiredRenderToTree(startingPoint);
                 });
                 state.addOnSetEvent((e)->{
                     renderItems();

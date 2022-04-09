@@ -3,6 +3,7 @@ package com.shojabon.sinventory.SInventoryV2;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class VRender {
@@ -31,6 +32,14 @@ public class VRender {
             iRender.put(offsetAppliedPos, render.iRender.get(pos));
             clickEventHandling.put(offsetAppliedPos, render.invObj);
         }
+    }
+
+    public VRender copy(){
+        VRender result = new VRender(this.invObj);
+        result.iRender = iRender;
+        result.clickEventHandling = clickEventHandling;
+
+        return result;
     }
 
 }

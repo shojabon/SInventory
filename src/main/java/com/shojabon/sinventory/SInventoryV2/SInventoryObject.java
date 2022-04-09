@@ -28,6 +28,7 @@ public class SInventoryObject implements Listener {
 
     HashMap<String, SInventoryObject> childObjects = new HashMap<>();
     VRender mainRender = new VRender(this);
+    SInventoryObject parentObject;
 
     boolean requiredRender = true;
 
@@ -65,7 +66,7 @@ public class SInventoryObject implements Listener {
             this.mainRender = this.render(new VRender(this));
             this.requiredRender = false;
         }
-        VRender result = this.mainRender;
+        VRender result = this.mainRender.copy();
         for(SInventoryObject childObject: this.childObjects.values()){
             VRender childRender = childObject.executeRender();
             result.mergeRender(childRender);
@@ -75,8 +76,14 @@ public class SInventoryObject implements Listener {
         return result;
     }
 
+    public final void setRequiredRenderToTree(SInventoryObject startingPoint){
+        startingPoint.requiredRender = true;
+        if(startingPoint.parentObject != null) setRequiredRenderToTree(startingPoint.parentObject);
+    }
+
     public final  void setChildObject(SInventoryObject object, String name, SInventoryPosition position){
         object.setOffset(position.x, position.y, position.z);
+        object.parentObject = this;
         object.onMount();
         this.childObjects.put(name, object);
     }
