@@ -11,10 +11,14 @@ import java.util.function.Consumer;
 public class SInventoryObject{
 
     public SInventoryObject(){
-        onMount();
+        try{
+            onMount();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
-    HashMap<String, SInventoryObject> childObjects = new HashMap<>();
+    ArrayList<SInventoryObject> childObjects = new ArrayList<>();
     VRender mainRender = new VRender(this);
     SInventoryObject parentObject;
 
@@ -32,7 +36,7 @@ public class SInventoryObject{
 
     ArrayList<BukkitTask> bukkitTasks = new ArrayList<>();
 
-    private boolean clickable = false;
+    private boolean clickable = true;
 
     // properties
 
@@ -73,7 +77,7 @@ public class SInventoryObject{
             this.requiredRender = false;
         }
         VRender result = this.mainRender.copy();
-        for(SInventoryObject childObject: this.childObjects.values()){
+        for(SInventoryObject childObject: this.childObjects){
             VRender childRender = childObject.executeRender();
             result.mergeRender(childRender);
 
@@ -87,12 +91,21 @@ public class SInventoryObject{
         if(startingPoint.parentObject != null) setRequiredRenderToTree(startingPoint.parentObject);
     }
 
-    public final  void setChildObject(SInventoryObject object, String name, SInventoryPosition position){
-        object.setOffset(position.x, position.y, position.z);
-        object.absoluteLocation = new SInventoryPosition(position.x + objectLocation.x, position.y +objectLocation.y, position.z + objectLocation.z);
-        object.parentObject = this;
-        object.onMount();
-        this.childObjects.put(name, object);
+    public final  void setChildObject(SInventoryObject object, int x, int y, int z){
+        setChildObject(object, new int[]{x}, new int[]{y}, new int[]{z});
+    }
+
+    public final  void setChildObject(SInventoryObject object, int[] x, int[] y, int[] z){
+        for(int iX: x){
+            for(int iY: y){
+                for(int iZ: z){
+                    object.setOffset(iX, iY, iZ);
+                    object.absoluteLocation = new SInventoryPosition(iX + objectLocation.x, iY +objectLocation.y, iZ + objectLocation.z);
+                    object.parentObject = this;
+                    this.childObjects.add(object);
+                }
+            }
+        }
     }
 
     // events
@@ -144,7 +157,7 @@ public class SInventoryObject{
         for(BukkitTask task: startingPoint.bukkitTasks){
             task.cancel();
         }
-        for(SInventoryObject obj: startingPoint.childObjects.values()){
+        for(SInventoryObject obj: startingPoint.childObjects){
             cancelAllBukkitTasks(obj);
         }
     }

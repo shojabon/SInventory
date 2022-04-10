@@ -30,6 +30,10 @@ public class SInventoryState <T>{
         }
     }
 
+    public void setNoExecuteEvent(T value){
+        this.value = value;
+    }
+
     public T get() {
         return value;
     }

@@ -21,6 +21,18 @@ import java.util.function.Consumer;
 public class SInventoryInstance extends SInventoryObject implements Listener {
     public static JavaPlugin pluginHook;
 
+    public static void onEnableHook(JavaPlugin plugin){
+        pluginHook = plugin;
+    }
+
+    public static void onDisableHook(){
+        for(Player p: Bukkit.getOnlinePlayers()){
+            movingPlayers.add(p.getUniqueId());
+            p.closeInventory();
+        }
+        movingPlayers.clear();
+    }
+
     public static ArrayList<UUID> movingPlayers = new ArrayList<>();
 
     private boolean inventoryOpen = false;
@@ -28,7 +40,7 @@ public class SInventoryInstance extends SInventoryObject implements Listener {
     public SInventoryInstance parentInstance;
 
     public Inventory mainInventory;
-    public String title = "";
+    public String title;
     public int rows = 6;
 
     private Player inventoryOwner = null;
@@ -54,7 +66,13 @@ public class SInventoryInstance extends SInventoryObject implements Listener {
     public void open(Player p){
         Bukkit.getScheduler().runTask(pluginHook, () -> {
             registerRenderHooks(this);
-            if(mainInventory == null) mainInventory = Bukkit.createInventory(null, rows*9, title);
+            if(mainInventory == null) {
+                if(title == null){
+                    mainInventory = Bukkit.createInventory(null, rows*9);
+                }else{
+                    mainInventory = Bukkit.createInventory(null, rows*9, this.title);
+                }
+            }
             p.openInventory(mainInventory);
             Bukkit.getPluginManager().registerEvents(this, pluginHook);
             inventoryOpen = true;
@@ -125,14 +143,18 @@ public class SInventoryInstance extends SInventoryObject implements Listener {
                 e.printStackTrace();
             }
         }
-        for(SInventoryObject childObject: startingPoint.childObjects.values()){
+        for(SInventoryObject childObject: startingPoint.childObjects){
             registerRenderHooks(childObject);
         }
     }
 
     public void unmountObjects(SInventoryObject startingPoint){
-        startingPoint.onUnMount();
-        for(SInventoryObject childObject: startingPoint.childObjects.values()){
+        try{
+            startingPoint.onUnMount();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        for(SInventoryObject childObject: startingPoint.childObjects){
             unmountObjects(childObject);
         }
     }
