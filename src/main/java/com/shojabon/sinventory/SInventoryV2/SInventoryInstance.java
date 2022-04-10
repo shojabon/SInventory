@@ -53,6 +53,19 @@ public class SInventoryInstance extends SInventoryObject implements Listener {
     ArrayList<Consumer<InventoryCloseEvent>> onCloseEvents = new ArrayList<>();
     ArrayList<Consumer<InventoryCloseEvent>> asyncOnCloseEvents = new ArrayList<>();
 
+    public void addInventoryOnClickEvent(Consumer<InventoryClickEvent> e){
+        onClickEvents.add(e);
+    }
+    public void addInventoryAsyncOnClickEvent(Consumer<InventoryClickEvent> e){
+        asyncOnClickEvents.add(e);
+    }
+    public void addOnCloseEvent(Consumer<InventoryCloseEvent> e){
+        onCloseEvents.add(e);
+    }
+    public void addAsyncOnCloseEvent(Consumer<InventoryCloseEvent> e){
+        asyncOnCloseEvents.add(e);
+    }
+
     public void setTitle(String title){
         this.title = title;
     }
@@ -65,19 +78,23 @@ public class SInventoryInstance extends SInventoryObject implements Listener {
 
     public void open(Player p){
         Bukkit.getScheduler().runTask(pluginHook, () -> {
-            registerRenderHooks(this);
-            if(mainInventory == null) {
-                if(title == null){
-                    mainInventory = Bukkit.createInventory(null, rows*9);
-                }else{
-                    mainInventory = Bukkit.createInventory(null, rows*9, this.title);
+            try{
+                registerRenderHooks(this);
+                if(mainInventory == null) {
+                    if(title == null){
+                        mainInventory = Bukkit.createInventory(null, rows*9);
+                    }else{
+                        mainInventory = Bukkit.createInventory(null, rows*9, this.title);
+                    }
                 }
+                p.openInventory(mainInventory);
+                Bukkit.getPluginManager().registerEvents(this, pluginHook);
+                inventoryOpen = true;
+                renderItems();
+                inventoryOwner = p;
+            }catch (Exception e){
+                e.printStackTrace();
             }
-            p.openInventory(mainInventory);
-            Bukkit.getPluginManager().registerEvents(this, pluginHook);
-            inventoryOpen = true;
-            renderItems();
-            inventoryOwner = p;
         });
 
     }
