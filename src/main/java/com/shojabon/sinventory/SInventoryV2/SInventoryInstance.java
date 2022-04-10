@@ -21,31 +21,44 @@ import java.util.function.Consumer;
 public class SInventoryInstance extends SInventoryObject implements Listener {
     public static JavaPlugin pluginHook;
 
+    public static ArrayList<UUID> movingPlayers = new ArrayList<>();
+
+    private boolean inventoryOpen = false;
+
     public SInventoryInstance parentInstance;
-    public boolean moving = false;
 
     public Inventory mainInventory;
-    public Player inventoryOwner = null;
+    public String title = "";
+    public int rows = 6;
+
+    private Player inventoryOwner = null;
     public VRender renderCache = null;
 
     // events
     ArrayList<Consumer<InventoryClickEvent>> onClickEvents = new ArrayList<>();
-    ArrayList<Consumer<InventoryClickEvent>> onClickAsyncEvents = new ArrayList<>();
+    ArrayList<Consumer<InventoryClickEvent>> AsyncOnClickEvents = new ArrayList<>();
 
     ArrayList<Consumer<InventoryCloseEvent>> onCloseEvents = new ArrayList<>();
-    ArrayList<Consumer<InventoryCloseEvent>> onCloseAsyncEvents = new ArrayList<>();
+    ArrayList<Consumer<InventoryCloseEvent>> asyncOnCloseEvents = new ArrayList<>();
 
+    public void setTitle(String title){
+        this.title = title;
+    }
+
+    public void setRows(int rows){
+        this.rows = rows;
+    }
 
     // main functionalities
 
     public void open(Player p){
         Bukkit.getScheduler().runTask(pluginHook, () -> {
-//            p.closeInventory();
             registerRenderHooks(this);
-            if(mainInventory == null) mainInventory = Bukkit.createInventory(null, 54);
-            renderItems();
-            Bukkit.getPluginManager().registerEvents(this, pluginHook);
+            if(mainInventory == null) mainInventory = Bukkit.createInventory(null, rows*9, title);
             p.openInventory(mainInventory);
+            Bukkit.getPluginManager().registerEvents(this, pluginHook);
+            inventoryOpen = true;
+            renderItems();
             inventoryOwner = p;
         });
 
@@ -53,10 +66,12 @@ public class SInventoryInstance extends SInventoryObject implements Listener {
 
     public void close(boolean ignoreParent){
         Bukkit.getScheduler().runTask(pluginHook, () -> {
-            if(ignoreParent){
-                moving = true;
+            if(!ignoreParent && parentInstance != null && !movingPlayers.contains(getPlayer().getUniqueId())){
+                movingPlayers.add(getPlayer().getUniqueId());
+                parentInstance.open(getPlayer());
+            }else {
+                getPlayer().closeInventory();
             }
-            getPlayer().closeInventory();
         });
     }
 
@@ -69,25 +84,31 @@ public class SInventoryInstance extends SInventoryObject implements Listener {
     }
 
     public void renderItems(){
-        VRender render = executeRender();
+        if(!inventoryOpen) return;
+        Bukkit.getScheduler().runTask(pluginHook, ()->{
+            VRender render = executeRender();
 
-        if(renderCache != null){
-            for(SInventoryPosition pos: renderCache.iRender.keySet()){
-                if(!render.iRender.containsKey(pos)){
-                    mainInventory.setItem(pos.x + objectLocation.x + ((pos.y + objectLocation.y) * 9), new ItemStack(Material.AIR));
-                }
-            }
-        }
-
-        for(SInventoryPosition pos: render.iRender.keySet()){
             if(renderCache != null){
-                if(renderCache.iRender.containsKey(pos)) {
-                    if(render.iRender.get(pos).isSimilar(renderCache.iRender.get(pos))) continue;
+                for(SInventoryPosition pos: renderCache.iRender.keySet()){
+                    if(!render.iRender.containsKey(pos)){
+                        if(pos.x + objectLocation.x + ((pos.y + objectLocation.y) * 9) > rows*9) continue;
+                        mainInventory.setItem(pos.x + objectLocation.x + ((pos.y + objectLocation.y) * 9), new ItemStack(Material.AIR));
+                    }
                 }
             }
-            mainInventory.setItem(pos.x + objectLocation.x + ((pos.y + objectLocation.y) * 9), render.iRender.get(pos));
-        }
-        this.renderCache = render;
+
+            for(SInventoryPosition pos: render.iRender.keySet()){
+                if(renderCache != null){
+                    if(renderCache.iRender.containsKey(pos)) {
+                        if(pos.x + objectLocation.x + ((pos.y + objectLocation.y) * 9) > rows*9) continue;
+                        if(render.iRender.get(pos).isSimilar(renderCache.iRender.get(pos)) &&
+                                render.iRender.get(pos).getAmount() == renderCache.iRender.get(pos).getAmount()) continue;
+                    }
+                }
+                mainInventory.setItem(pos.x + objectLocation.x + ((pos.y + objectLocation.y) * 9), render.iRender.get(pos));
+            }
+            this.renderCache = render;
+        });
     }
 
     public void registerRenderHooks(SInventoryObject startingPoint){
@@ -96,12 +117,10 @@ public class SInventoryInstance extends SInventoryObject implements Listener {
                 if(!SInventoryState.class.isAssignableFrom(field.getType())) continue;
 
                 SInventoryState<?> state = (SInventoryState<?>) field.get(startingPoint);
-                state.addOnSetEvent((e)->{
+                state.onSetRenderEvent = (e) -> {
                     setRequiredRenderToTree(startingPoint);
-                });
-                state.addOnSetEvent((e)->{
-                    Bukkit.getScheduler().runTask(SInventoryInstance.pluginHook, this::renderItems);
-                });
+                    this.renderItems();
+                };
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -119,32 +138,54 @@ public class SInventoryInstance extends SInventoryObject implements Listener {
     }
 
     public void chainOpen(SInventoryInstance nextInstance){
-        moving = true;
-        nextInstance.parentInstance = this;
-        nextInstance.open(getPlayer());
+        Bukkit.getScheduler().runTask(pluginHook, () ->{
+            movingPlayers.add(getPlayer().getUniqueId());
+            nextInstance.parentInstance = this;
+            nextInstance.open(getPlayer());
+        });
     }
 
     @EventHandler
     public void onClick(InventoryClickEvent e){
         if(e.getWhoClicked().getUniqueId() != getPlayer().getUniqueId()) return;
+        if(!inventoryOpen) return;
+
         SInventoryPosition pos = new SInventoryPosition(e.getRawSlot()%9, e.getRawSlot()/9);
         if(!mainRender.clickEventHandling.containsKey(pos)) return;
         SInventoryObject object = mainRender.clickEventHandling.get(pos);
+        pos.z = object.absoluteLocation.z;
         if(!object.isClickable()) e.setCancelled(true);
+
 
         SInventoryObject.executeOnClick(object, e, pos);
 
+
+        // position specific events
+        for(SInventoryPosition eventPosition: object.positionOnClickEvents.keySet()){
+            if(!eventPosition.isTwoDEquals(pos)) continue;
+            for(Consumer<InventoryClickEvent> event: object.positionOnClickEvents.get(eventPosition)){
+                try{event.accept(e);}catch (Exception exception){exception.printStackTrace();}
+            }
+        }
+
+        for(SInventoryPosition eventPosition: object.asyncPositionOnClickEvents.keySet()){
+            if(!eventPosition.isTwoDEquals(pos)) continue;
+            for(Consumer<InventoryClickEvent> event: object.asyncPositionOnClickEvents.get(eventPosition)){
+                new Thread(() -> event.accept(e)).start();
+            }
+        }
+
         // instance events
         for(Consumer<InventoryClickEvent> event: onClickEvents){
-            event.accept(e);
+            try{event.accept(e);}catch (Exception exception){exception.printStackTrace();}
         }
-        for(Consumer<InventoryClickEvent> event: onClickAsyncEvents){
+        for(Consumer<InventoryClickEvent> event: AsyncOnClickEvents){
             new Thread(() -> event.accept(e)).start();
         }
 
         // object events
         for(Consumer<InventoryClickEvent> event: object.onClickEvents){
-            event.accept(e);
+            try{event.accept(e);}catch (Exception exception){exception.printStackTrace();}
         }
         for(Consumer<InventoryClickEvent> event: object.asyncOnClickEvents){
             new Thread(() -> event.accept(e)).start();
@@ -161,19 +202,20 @@ public class SInventoryInstance extends SInventoryObject implements Listener {
 
         // instance events
         for(Consumer<InventoryCloseEvent> event: onCloseEvents){
-            event.accept(e);
+            try{event.accept(e);}catch (Exception exception){exception.printStackTrace();}
         }
-        for(Consumer<InventoryCloseEvent> event: onCloseAsyncEvents){
+        for(Consumer<InventoryCloseEvent> event: asyncOnCloseEvents){
             new Thread(() -> event.accept(e)).start();
         }
 
         // linked instance
-        if(!moving && parentInstance != null){
+        if(!movingPlayers.contains(getPlayer().getUniqueId()) && parentInstance != null){
             Bukkit.getScheduler().runTaskAsynchronously(pluginHook, ()-> {
                 parentInstance.open((Player) e.getPlayer());
             });
         }
-        if(moving) moving = false;
+        movingPlayers.remove(getPlayer().getUniqueId());
+        inventoryOpen = false;
     }
 
 }

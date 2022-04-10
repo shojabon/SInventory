@@ -1,26 +1,12 @@
 package com.shojabon.sinventory.SInventoryV2;
 
-import com.shojabon.sinventory.SInventory;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class SInventoryObject{
 
@@ -41,9 +27,14 @@ public class SInventoryObject{
     ArrayList<Consumer<InventoryClickEvent>> onClickEvents = new ArrayList<>();
     ArrayList<Consumer<InventoryClickEvent>> asyncOnClickEvents = new ArrayList<>();
 
+    HashMap<SInventoryPosition, ArrayList<Consumer<InventoryClickEvent>>> positionOnClickEvents = new HashMap<>();
+    HashMap<SInventoryPosition, ArrayList<Consumer<InventoryClickEvent>>> asyncPositionOnClickEvents = new HashMap<>();
+
     ArrayList<BukkitTask> bukkitTasks = new ArrayList<>();
 
     private boolean clickable = false;
+
+    // properties
 
     public final void setClickable(boolean clickable){
         this.clickable = clickable;
@@ -71,7 +62,7 @@ public class SInventoryObject{
 
     public static void executeOnClick(SInventoryObject starting, InventoryClickEvent event, SInventoryPosition clickLocation){
         SInventoryPosition relativePosition = SInventoryPosition.minus(clickLocation, starting.absoluteLocation, true);
-        relativePosition.z = starting.absoluteLocation.z;
+        relativePosition.z = clickLocation.z;
         starting.onClick(event, relativePosition);
         if(starting.parentObject != null) executeOnClick(starting.parentObject, event, clickLocation);
     }
@@ -110,8 +101,24 @@ public class SInventoryObject{
         this.onClickEvents.add(event);
     }
 
-    public final void addAsynchronousOnClickEvent(Consumer<InventoryClickEvent> event){
+    public final void addAsyncOnClickEvent(Consumer<InventoryClickEvent> event){
         this.asyncOnClickEvents.add(event);
+    }
+
+    public final void addOnClickEvent(int x, int y, Consumer<InventoryClickEvent> event){
+        SInventoryPosition pos = new SInventoryPosition(x, y);
+        if(!positionOnClickEvents.containsKey(pos)){
+            positionOnClickEvents.put(pos, new ArrayList<>());
+        }
+        positionOnClickEvents.get(pos).add(event);
+    }
+
+    public final void addAsyncOnClickEvent(int x, int y, Consumer<InventoryClickEvent> event){
+        SInventoryPosition pos = new SInventoryPosition(x, y);
+        if(!asyncPositionOnClickEvents.containsKey(pos)){
+            asyncPositionOnClickEvents.put(pos, new ArrayList<>());
+        }
+        asyncPositionOnClickEvents.get(pos).add(event);
     }
 
     // timer tasks

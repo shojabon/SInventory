@@ -1,5 +1,6 @@
 package com.shojabon.sinventory.SInventoryV2;
 
+import org.bukkit.Bukkit;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ public class SInventoryState <T>{
 
 
     private ArrayList<Consumer<T>> onSetEvents = new ArrayList<>();
+    Consumer<T> onSetRenderEvent = null;
 
     public SInventoryState(T defaultValue) {
         this.value = defaultValue;
@@ -22,8 +24,9 @@ public class SInventoryState <T>{
 
     public void set(T value) {
         this.value = value;
+        if(onSetRenderEvent != null) onSetRenderEvent.accept(value);
         for(Consumer<T> consumer: onSetEvents){
-            consumer.accept(value);
+            try{consumer.accept(value);}catch (Exception exception){exception.printStackTrace();}
         }
     }
 

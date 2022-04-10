@@ -2,6 +2,7 @@ package com.shojabon.sinventory;
 
 import com.shojabon.sinventory.SInventoryV2.SInventoryInstance;
 import com.shojabon.sinventory.SInventoryV2.modules.SInvTestModule;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -27,6 +28,11 @@ public final class SInventory extends JavaPlugin {
         Player p = (Player)sender;
 
         SInvTestModule counter = new SInvTestModule(new ItemStack(Material.BLUE_STAINED_GLASS_PANE), 0);
+
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, ()->{
+            int itemCount = (int) (System.currentTimeMillis()/1000L%2) + 1;
+            counter.nextMenu.test.set(itemCount);
+        }, 20, 20);
         counter.open(p);
 
         return false;

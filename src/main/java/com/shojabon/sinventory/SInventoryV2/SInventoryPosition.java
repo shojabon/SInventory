@@ -51,6 +51,10 @@ public class SInventoryPosition{
         }
     }
 
+    public boolean isTwoDEquals(SInventoryPosition pos){
+        return x == pos.x && y == pos.y;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

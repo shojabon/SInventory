@@ -6,28 +6,20 @@ import com.shojabon.sinventory.SInventoryV2.SInventoryState;
 import com.shojabon.sinventory.SInventoryV2.VRender;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.entity.Item;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
-public class SInvTestModule extends SInventoryInstance {
+public class SInvTestModule2 extends SInventoryInstance {
 
 
     SInvButton button = new SInvButton();
-    ItemStack back;
+    public SInventoryState<Integer> test = new SInventoryState<>(2);
 
-    public SInvTestModule2 nextMenu = new SInvTestModule2();
-
-    public SInvTestModule(ItemStack background, int count){
+    public SInvTestModule2(){
 
         setClickable(false);
         setRows(6);
         setTitle("test");
-        this.back = background;
-
-        button.r1 = () -> {
-            chainOpen(nextMenu);
-        };
 
         button.r = () -> {
             close();
@@ -43,6 +35,8 @@ public class SInvTestModule extends SInventoryInstance {
 
     @Override
     public VRender render(VRender render) {
+        ItemStack back = new ItemStack(Material.RED_STAINED_GLASS_PANE);
+        back.setAmount(test.get());
         render.set(new int[]{0, 1, 2, 3}, new int[]{0, 1, 2}, back);
         return render;
 
