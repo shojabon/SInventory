@@ -25,8 +25,7 @@ public class RainbowMenu extends SInventoryInstance {
             Material.MAGENTA_STAINED_GLASS_PANE,
     };
 
-    @Override
-    public void onMount() {
+    public RainbowMenu(){
         runTaskTimerAsync(()->{
             randomSeed.set(new Random().nextInt());
         }, 0, 0);

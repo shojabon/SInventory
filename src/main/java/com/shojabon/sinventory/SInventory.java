@@ -2,6 +2,7 @@ package com.shojabon.sinventory;
 
 import com.shojabon.sinventory.SInventoryV2.SInventoryInstance;
 import com.shojabon.sinventory.demos.Captcha;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;

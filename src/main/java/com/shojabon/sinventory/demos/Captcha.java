@@ -10,6 +10,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Random;
+import java.util.Timer;
 import java.util.Vector;
 
 public class Captcha extends SInventoryInstance {
@@ -20,8 +21,7 @@ public class Captcha extends SInventoryInstance {
     public SInventoryState<Integer> locationX = new SInventoryState<>(1);
     public SInventoryState<Integer> locationY = new SInventoryState<>(1);
 
-    @Override
-    public void onMount() {
+    public Captcha(){
         setTitle("§l§aCaptcha 赤をクリックしてください");
         setClickable(false);
 

@@ -10,14 +10,6 @@ import java.util.function.Consumer;
 
 public class SInventoryObject{
 
-    public SInventoryObject(){
-        try{
-            onMount();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
     ArrayList<SInventoryObject> childObjects = new ArrayList<>();
     VRender mainRender = new VRender(this);
     SInventoryObject parentObject;
@@ -57,8 +49,6 @@ public class SInventoryObject{
     public VRender render(VRender render){
         return render;
     }
-
-    public void onMount(){}
 
     public void onUnMount(){}
 
@@ -136,21 +126,41 @@ public class SInventoryObject{
 
     // timer tasks
 
-    public final void runTaskTimer(Runnable task, int delayTick, int intervalTick){
-        bukkitTasks.add(Bukkit.getScheduler().runTaskTimer(SInventoryInstance.pluginHook, task, delayTick, intervalTick));
+    public final BukkitTask runTaskTimer(Runnable task, int delayTick, int intervalTick){
+        BukkitTask createdTask = Bukkit.getScheduler().runTaskTimer(SInventoryInstance.pluginHook, task, delayTick, intervalTick);
+        bukkitTasks.add(createdTask);
+        return createdTask;
     }
 
-    public final void runTaskTimerAsync(Runnable task, int delayTick, int intervalTick){
-        bukkitTasks.add(Bukkit.getScheduler().runTaskTimerAsynchronously(SInventoryInstance.pluginHook, task, delayTick, intervalTick));
+    public final BukkitTask runTaskTimerAsync(Runnable task, int delayTick, int intervalTick){
+        BukkitTask createdTask = Bukkit.getScheduler().runTaskTimerAsynchronously(SInventoryInstance.pluginHook, task, delayTick, intervalTick);
+        bukkitTasks.add(createdTask);
+        return createdTask;
     }
 
 
-    public final void runTaskLater(Runnable task, int delayTick, boolean async){
-        bukkitTasks.add(Bukkit.getScheduler().runTaskLater(SInventoryInstance.pluginHook, task, delayTick));
+    public final BukkitTask runTaskLater(Runnable task, int delayTick){
+        BukkitTask createdTask = Bukkit.getScheduler().runTaskLater(SInventoryInstance.pluginHook, task, delayTick);
+        bukkitTasks.add(createdTask);
+        return createdTask;
     }
 
-    public final void runTaskLaterAsync(Runnable task, int delayTick, boolean async){
-        bukkitTasks.add(Bukkit.getScheduler().runTaskLaterAsynchronously(SInventoryInstance.pluginHook, task, delayTick));
+    public final BukkitTask runTaskLaterAsync(Runnable task, int delayTick){
+        BukkitTask createdTask = Bukkit.getScheduler().runTaskLaterAsynchronously(SInventoryInstance.pluginHook, task, delayTick);
+        bukkitTasks.add(createdTask);
+        return createdTask;
+    }
+
+    public final BukkitTask runTask(Runnable task){
+        BukkitTask createdTask = Bukkit.getScheduler().runTask(SInventoryInstance.pluginHook, task);
+        bukkitTasks.add(createdTask);
+        return createdTask;
+    }
+
+    public final BukkitTask runTaskAsync(Runnable task){
+        BukkitTask createdTask = Bukkit.getScheduler().runTaskAsynchronously(SInventoryInstance.pluginHook, task);
+        bukkitTasks.add(createdTask);
+        return createdTask;
     }
 
     public static void cancelAllBukkitTasks(SInventoryObject startingPoint){
