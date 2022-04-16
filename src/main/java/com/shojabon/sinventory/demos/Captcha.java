@@ -41,8 +41,8 @@ public class Captcha extends SInventoryInstance {
             directionX.setNoExecuteEvent(directX);
             directionY.setNoExecuteEvent(directY);
             locationX.setNoExecuteEvent(nextX);
-            locationY.set(nextY);
-
+            locationY.setNoExecuteEvent(nextY);
+            invokeRender();
         }, 1, 1);
     }
 

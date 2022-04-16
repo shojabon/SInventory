@@ -16,6 +16,8 @@ public class SInventoryObject{
 
     boolean requiredRender = true;
 
+    Runnable renderFunction = null;
+
     SInventoryPosition objectLocation = new SInventoryPosition(0, 0, 0);
     SInventoryPosition absoluteLocation = new SInventoryPosition(0, 0, 0);
 
@@ -79,6 +81,10 @@ public class SInventoryObject{
     public static void setRequiredRenderToTree(SInventoryObject startingPoint){
         startingPoint.requiredRender = true;
         if(startingPoint.parentObject != null) setRequiredRenderToTree(startingPoint.parentObject);
+    }
+
+    public void invokeRender(){
+        renderFunction.run();
     }
 
     public final  void setChildObject(SInventoryObject object, int x, int y, int z){

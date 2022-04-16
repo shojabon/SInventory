@@ -147,6 +147,10 @@ public class SInventoryInstance extends SInventoryObject implements Listener {
     }
 
     public void registerRenderHooks(SInventoryObject startingPoint){
+        startingPoint.renderFunction = () -> {
+            setRequiredRenderToTree(startingPoint);
+            this.renderItems();
+        };
         for(Field field: startingPoint.getClass().getDeclaredFields()){
             try{
                 if(!SInventoryState.class.isAssignableFrom(field.getType())) continue;
