@@ -2,6 +2,7 @@ package com.shojabon.sinventory;
 
 import com.shojabon.sinventory.SInventoryV2.SInventoryInstance;
 import com.shojabon.sinventory.demos.Captcha;
+import com.shojabon.sinventory.demos.RainbowMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -28,7 +29,7 @@ public final class SInventory extends JavaPlugin {
 
 //        RainbowMenu menu = new RainbowMenu();
 
-        Captcha menu = new Captcha();
+        RainbowMenu menu = new RainbowMenu();
         menu.open(p);
 
         return false;
